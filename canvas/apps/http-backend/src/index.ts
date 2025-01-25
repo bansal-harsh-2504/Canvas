@@ -2,6 +2,7 @@ import express from "express";
 import "dotenv/config";
 import jwt from "jsonwebtoken";
 import { middleware } from "./middleware/auth.middleware";
+import { JWT_SECRET } from "@repo/backend-common/config";
 
 const app = express();
 
@@ -17,7 +18,7 @@ app.post("/signin", (req, res) => {
     {
       userId,
     },
-    process.env.JWT_SECRET as string
+    JWT_SECRET
   );
 
   res.json({

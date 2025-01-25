@@ -9,14 +9,15 @@
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
-    "@types/jsonwebtoken": "^9.0.8"
+    "@repo/backend-common": "workspace:*",
+    "@types/jsonwebtoken": "^9.0.8",
+    "@types/ws": "^8.5.14"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@types/ws": "^8.5.14",
     "dotenv": "^16.4.7",
     "jsonwebtoken": "^9.0.2",
     "ws": "^8.18.0"
