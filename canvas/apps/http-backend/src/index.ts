@@ -17,6 +17,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.post("/signup", async (req, res) => {
+  if (!JWT_SECRET) {
+    console.log("jwt jwt", JWT_SECRET);
+    return;
+  }
   const data = createUserSchema.safeParse(req.body);
 
   if (!data.success) {
