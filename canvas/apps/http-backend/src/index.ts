@@ -8,10 +8,15 @@ import {
   signInSchema,
   createRoomSchema,
 } from "@repo/common/types";
+import { prismaClient } from "@repo/db/client";
+import bcrypt from "bcrypt";
 
 const app = express();
 
-app.post("/signup", (req, res) => {
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.post("/signup", async (req, res) => {
   const data = createUserSchema.safeParse(req.body);
 
   if (!data.success) {
@@ -21,12 +26,48 @@ app.post("/signup", (req, res) => {
     return;
   }
 
-  res.json({
-    userID: 123,
-  });
+  const { email, password, name } = data.data;
+
+  try {
+    const existingUser = await prismaClient.user.findFirst({
+      where: { email },
+    });
+
+    if (existingUser) {
+      res.status(400).json({ message: "User already exists" });
+      return;
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = await prismaClient.user.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+      },
+    });
+
+    const token = jwt.sign(
+      { id: newUser.id, email: newUser.email },
+      JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    res.status(201).json({
+      message: "User created successfully",
+      token,
+      userID: newUser.id,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Internal server error",
+    });
+  }
 });
 
-app.post("/signin", (req, res) => {
+app.post("/signin", async (req, res) => {
   const data = signInSchema.safeParse(req.body);
 
   if (!data.success) {
@@ -36,16 +77,25 @@ app.post("/signin", (req, res) => {
     return;
   }
 
-  const userId = 1;
-  const token = jwt.sign(
-    {
-      userId,
-    },
-    JWT_SECRET
-  );
+  const { email, password } = data.data;
 
-  res.json({
+  const user = await prismaClient.user.findFirst({ where: { email } });
+
+  if (!user || !(await bcrypt.compare(password, user.password))) {
+    res.status(401).json({
+      message: "Invalid credentials!",
+    });
+    return;
+  }
+
+  const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
+    expiresIn: "1h",
+  });
+
+  res.status(201).json({
+    message: "Successfully signed in",
     token,
+    userId: user.id,
   });
 });
 
