@@ -2,8 +2,10 @@ import "dotenv/config";
 import { WebSocket, WebSocketServer } from "ws";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "@repo/backend-common/config";
+import { prismaClient } from "@repo/db/client";
 
 const wss = new WebSocketServer({ port: 8080 });
+
 interface User {
   ws: WebSocket;
   rooms: Set<string>;
@@ -11,6 +13,7 @@ interface User {
 }
 const users = new Map<WebSocket, User>();
 const rooms = new Map<string, Set<User>>();
+const roomsMap = new Map<string, number>();
 
 function checkUser(token: string): string | null {
   try {
@@ -19,7 +22,12 @@ function checkUser(token: string): string | null {
       return null;
     }
     return decoded.userId;
-  } catch {
+  } catch (err) {
+    if (err instanceof jwt.TokenExpiredError) {
+      console.log("Token expired");
+      return null;
+    }
+    console.log("Invalid token", err);
     return null;
   }
 }
@@ -28,7 +36,9 @@ wss.on("connection", function connection(ws, request) {
   const url = request.url;
   if (!url) return ws.close();
 
-  const queryParams = new URLSearchParams(url.split("?")[1]);
+  const queryParams = new URLSearchParams(
+    url.includes("?") ? url.split("?")[1] : ""
+  );
   const token = queryParams.get("token") || "";
   const userId = checkUser(token);
   if (!userId) {
@@ -37,57 +47,116 @@ wss.on("connection", function connection(ws, request) {
   }
   const user: User = { ws, rooms: new Set(), userId };
   users.set(ws, user);
-  console.log("user %s connected", userId);
+  console.log("User %s connected", userId);
 
   ws.on("message", async function message(data) {
     try {
       const parsedData = JSON.parse(data as unknown as string);
 
-      const { type, roomId, message } = parsedData;
+      const { type, slug, message, roomId } = parsedData;
 
       if (!type || !["join_room", "leave_room", "chat"].includes(type)) {
         throw new Error("Invalid message type");
       }
-
       if (type === "join_room") {
-        if (!roomId)
-          return ws.send(JSON.stringify({ error: "Room ID is required." }));
+        if (!slug)
+          return ws.send(
+            JSON.stringify({ error: "Slug is required to join the room" })
+          );
+        let room = await prismaClient.room.findUnique({
+          where: {
+            slug,
+          },
+        });
 
-        user.rooms.add(roomId);
+        if (!room) {
+          room = await prismaClient.room.create({
+            data: {
+              adminId: userId,
+              slug,
+            },
+          });
+        }
+        const roomId = room.id;
+        user.rooms.add(slug);
+        roomsMap.set(slug, roomId);
 
-        if (!rooms.has(roomId)) {
-          rooms.set(roomId, new Set());
+        if (!rooms.has(slug)) {
+          rooms.set(slug, new Set());
         }
 
-        rooms.get(roomId)?.add(user);
-        console.log("User %s joined room %s", userId, roomId);
+        rooms.get(slug)?.add(user);
+        console.log(
+          "User %s joined room (%s) with roomId %d",
+          userId,
+          slug,
+          roomId
+        );
       } else if (type === "leave_room") {
-        if (!roomId)
-          return ws.send(JSON.stringify({ error: "Room ID is required." }));
-
-        user.rooms.delete(roomId);
-        rooms.get(roomId)?.delete(user);
-
-        if (rooms.get(roomId)?.size === 0) {
-          rooms.delete(roomId);
-        }
-        console.log("User %s left room %s", userId, roomId);
-      } else if (type === "chat") {
-        if (!roomId || !message)
+        if (!slug)
           return ws.send(
-            JSON.stringify({ error: "Room ID and message are required." })
+            JSON.stringify({ error: "Slug is required to leave the room" })
           );
-        if (!user.rooms.has(roomId)) {
+
+        if (!roomsMap.get(slug)) {
+          return ws.send(JSON.stringify({ error: "Invalid Slug" }));
+        }
+
+        if (![...user.rooms].some((roomSlug) => roomSlug === slug)) {
           return ws.send(
-            JSON.stringify({ error: "You are not a member of this room." })
+            JSON.stringify({ error: "You are not a member of this room" })
           );
         }
 
-        rooms.get(roomId)?.forEach((member) => {
-          if (member.ws !== ws) {
-            member.ws.send(JSON.stringify({ type: "chat", roomId, message }));
+        user.rooms.forEach((roomSlug) => {
+          if (roomSlug === slug) {
+            user.rooms.delete(slug);
           }
         });
+        const roomId = roomsMap.get(slug);
+
+        rooms.get(slug)?.delete(user);
+
+        console.log(
+          "User %s left room (%s) with roomId %d",
+          userId,
+          slug,
+          roomId
+        );
+
+        if (rooms.get(slug)?.size === 0) {
+          rooms.delete(slug);
+          roomsMap.delete(slug);
+          console.log("Room (%s) has been removed because it is empty", slug);
+        }
+      } else if (type === "chat") {
+        if (!slug || !message)
+          return ws.send(
+            JSON.stringify({ error: "Both slug and message are required" })
+          );
+
+        let roomId = roomsMap.get(slug);
+
+        if (!roomId) {
+          return ws.send(JSON.stringify({ error: "Invalid slug" }));
+        }
+
+        if (![...user.rooms].includes(slug)) {
+          return ws.send(
+            JSON.stringify({ error: "You are not a member of this room" })
+          );
+        }
+
+        const room = rooms.get(slug);
+        if (room) {
+          room.forEach((member) => {
+            if (member.ws !== ws) {
+              member.ws.send(JSON.stringify({ type: "chat", slug, message }));
+            }
+          });
+        } else {
+          return ws.send(JSON.stringify({ error: "Room not found" }));
+        }
       }
     } catch (err) {
       ws.send(JSON.stringify({ error: "Invalid message format" }));
@@ -95,11 +164,17 @@ wss.on("connection", function connection(ws, request) {
   });
 
   ws.on("close", () => {
-    console.log("user %s disconnected", userId);
+    console.log("User %s disconnected", userId);
     users.delete(ws);
-    user.rooms.forEach((roomId) => {
-      rooms.get(roomId)?.delete(user);
-      if (rooms.get(roomId)?.size === 0) rooms.delete(roomId);
+
+    user.rooms.forEach((slug) => {
+      rooms.get(slug)?.delete(user);
+
+      if (rooms.get(slug)?.size === 0) {
+        rooms.delete(slug);
+        roomsMap.delete(slug);
+        console.log("Room (%s) has been removed because it is empty", slug);
+      }
     });
   });
 });

@@ -1,0 +1,2 @@
+handle user reconnection
+handle erron on sending messaged to a disconnected websocket
