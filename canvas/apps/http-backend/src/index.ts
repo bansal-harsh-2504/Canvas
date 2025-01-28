@@ -49,7 +49,7 @@ app.post("/signup", async (req, res) => {
     });
 
     const token = jwt.sign(
-      { id: newUser.id, email: newUser.email },
+      { userId: newUser.id, email: newUser.email },
       JWT_SECRET,
       { expiresIn: "1h" }
     );

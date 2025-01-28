@@ -10,7 +10,6 @@ interface User {
   rooms: Set<string>;
   userId: string;
 }
-
 const users = new Map<WebSocket, User>();
 const rooms = new Map<string, Set<User>>();
 
@@ -33,13 +32,13 @@ wss.on("connection", function connection(ws, request) {
   const queryParams = new URLSearchParams(url.split("?")[1]);
   const token = queryParams.get("token") || "";
   const userId = checkUser(token);
-
   if (!userId) {
     ws.close();
     return;
   }
   const user: User = { ws, rooms: new Set(), userId };
   users.set(ws, user);
+  console.log("user %s connected", userId);
 
   ws.on("message", async function message(data) {
     try {
@@ -83,6 +82,7 @@ wss.on("connection", function connection(ws, request) {
   });
 
   ws.on("close", () => {
+    console.log("user %s disconnected", userId);
     users.delete(ws);
     user.rooms.forEach((roomId) => {
       rooms.get(roomId)?.delete(user);
