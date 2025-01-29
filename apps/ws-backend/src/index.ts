@@ -159,6 +159,7 @@ wss.on("connection", function connection(ws, request) {
                 message,
               },
             });
+            console.log("saved to db");
           } catch {
             console.log("Couldn't save message to database");
           }
