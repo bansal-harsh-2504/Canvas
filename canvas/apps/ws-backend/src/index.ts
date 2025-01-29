@@ -53,7 +53,7 @@ wss.on("connection", function connection(ws, request) {
     try {
       const parsedData = JSON.parse(data as unknown as string);
 
-      const { type, slug, message, roomId } = parsedData;
+      const { type, slug, message } = parsedData;
 
       if (!type || !["join_room", "leave_room", "chat"].includes(type)) {
         throw new Error("Invalid message type");
@@ -63,29 +63,24 @@ wss.on("connection", function connection(ws, request) {
           return ws.send(
             JSON.stringify({ error: "Slug is required to join the room" })
           );
-        let room = await prismaClient.room.findUnique({
-          where: {
-            slug,
-          },
-        });
+        let roomId = roomsMap.get(slug);
 
-        if (!room) {
-          room = await prismaClient.room.create({
+        if (!roomId) {
+          const room = await prismaClient.room.create({
             data: {
               adminId: userId,
               slug,
             },
           });
-        }
-        const roomId = room.id;
-        user.rooms.add(slug);
-        roomsMap.set(slug, roomId);
-
-        if (!rooms.has(slug)) {
+          roomId = room.id;
           rooms.set(slug, new Set());
         }
+        user.rooms.add(slug);
+
+        roomsMap.set(slug, roomId);
 
         rooms.get(slug)?.add(user);
+
         console.log(
           "User %s joined room (%s) with roomId %d",
           userId,
@@ -102,7 +97,7 @@ wss.on("connection", function connection(ws, request) {
           return ws.send(JSON.stringify({ error: "Invalid Slug" }));
         }
 
-        if (![...user.rooms].some((roomSlug) => roomSlug === slug)) {
+        if (![...user.rooms].includes(slug)) {
           return ws.send(
             JSON.stringify({ error: "You are not a member of this room" })
           );
@@ -113,6 +108,7 @@ wss.on("connection", function connection(ws, request) {
             user.rooms.delete(slug);
           }
         });
+
         const roomId = roomsMap.get(slug);
 
         rooms.get(slug)?.delete(user);
@@ -125,6 +121,11 @@ wss.on("connection", function connection(ws, request) {
         );
 
         if (rooms.get(slug)?.size === 0) {
+          try {
+            await prismaClient.room.delete({ where: { slug } });
+          } catch {
+            console.log("Couldn't delete room from the database.");
+          }
           rooms.delete(slug);
           roomsMap.delete(slug);
           console.log("Room (%s) has been removed because it is empty", slug);
@@ -148,7 +149,19 @@ wss.on("connection", function connection(ws, request) {
         }
 
         const room = rooms.get(slug);
+
         if (room) {
+          try {
+            await prismaClient.chat.create({
+              data: {
+                roomId,
+                userId,
+                message,
+              },
+            });
+          } catch {
+            console.log("Couldn't save message to database");
+          }
           room.forEach((member) => {
             if (member.ws !== ws) {
               member.ws.send(JSON.stringify({ type: "chat", slug, message }));
