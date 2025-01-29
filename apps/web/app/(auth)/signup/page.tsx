@@ -1,7 +1,7 @@
 "use client";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import useAuthStore from "../../../store/useStore";
 
 export default function Signup(): JSX.Element {
@@ -9,7 +9,7 @@ export default function Signup(): JSX.Element {
   const nameRef = useRef<HTMLInputElement | null>(null);
   const emailRef = useRef<HTMLInputElement | null>(null);
   const passwordRef = useRef<HTMLInputElement | null>(null);
-  const { login } = useAuthStore();
+  const { login, isAuthenticated, user } = useAuthStore();
 
   const validateInputs = () => {
     if (
@@ -50,6 +50,12 @@ export default function Signup(): JSX.Element {
       alert("Signup failed. Please try again.");
     }
   };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push("/rooms");
+    }
+  }, [user]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900">

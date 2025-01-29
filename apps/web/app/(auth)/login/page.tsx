@@ -1,12 +1,12 @@
 "use client";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import useAuthStore from "../../../store/useStore";
 
 export default function Login(): JSX.Element {
   const router = useRouter();
-  const { login } = useAuthStore();
+  const { login, isAuthenticated, user } = useAuthStore();
   const [loading, setLoading] = useState(false);
 
   const emailRef = useRef<HTMLInputElement | null>(null);
@@ -54,8 +54,16 @@ export default function Login(): JSX.Element {
       router.push("/rooms");
     } catch (error) {
       alert("Login failed. Please check your credentials.");
+    } finally {
+      setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push("/rooms");
+    }
+  }, [user]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900">
