@@ -2,7 +2,23 @@ import jwt from "jsonwebtoken";
 import { NextFunction, Request, Response } from "express";
 
 export function middleware(req: Request, res: Response, next: NextFunction) {
-  const token = req.headers["authorization"] ?? "";
+  let token: undefined | string = req.headers["authorization"] ?? "";
+
+  if (!token || !token.startsWith("Bearer")) {
+    res.status(403).json({
+      message: "Unauthorized",
+    });
+    return;
+  }
+
+  token = token.split(" ")[1];
+
+  if (!token) {
+    res.status(403).json({
+      message: "Unauthorized",
+    });
+    return;
+  }
 
   const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as {
     userId: string;

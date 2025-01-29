@@ -67,7 +67,7 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-app.post("/signin", async (req, res) => {
+app.post("/login", async (req, res) => {
   const data = signInSchema.safeParse(req.body);
 
   if (!data.success) {
@@ -96,6 +96,7 @@ app.post("/signin", async (req, res) => {
     message: "Successfully signed in",
     token,
     userId: user.id,
+    name: user.name,
   });
 });
 

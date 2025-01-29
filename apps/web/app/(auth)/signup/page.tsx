@@ -2,12 +2,14 @@
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useRef } from "react";
+import useAuthStore from "../../../store/useStore";
 
 export default function Signup(): JSX.Element {
   const router = useRouter();
   const nameRef = useRef<HTMLInputElement | null>(null);
   const emailRef = useRef<HTMLInputElement | null>(null);
   const passwordRef = useRef<HTMLInputElement | null>(null);
+  const { login } = useAuthStore();
 
   const validateInputs = () => {
     if (
@@ -37,25 +39,29 @@ export default function Signup(): JSX.Element {
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/signup`,
         { name, email, password }
       );
+      const { token, userId } = res.data;
 
-      alert("Signup successful. Please log in.");
-      router.push("/login");
+      const user = { token, userId, name };
+
+      login(user);
+
+      router.push("/");
     } catch (error) {
       alert("Signup failed. Please try again.");
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-md p-6">
-        <h1 className="text-2xl font-bold mb-4 text-center text-blue-600">
+    <div className="min-h-screen flex items-center justify-center bg-gray-900">
+      <div className="w-full max-w-md bg-gray-800 text-white rounded-lg shadow-lg p-6">
+        <h1 className="text-3xl font-semibold mb-6 text-center text-blue-500">
           Sign Up
         </h1>
         <form onSubmit={handleSignup}>
-          <div className="mb-4">
+          <div className="mb-6">
             <label
               htmlFor="name"
-              className="block text-sm font-medium text-gray-700"
+              className="block text-sm font-medium text-gray-300"
             >
               Full Name
             </label>
@@ -63,14 +69,14 @@ export default function Signup(): JSX.Element {
               ref={nameRef}
               type="text"
               id="name"
-              className="mt-1 block w-full px-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="mt-1 block w-full px-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-gray-700 text-white"
               required
             />
           </div>
-          <div className="mb-4">
+          <div className="mb-6">
             <label
               htmlFor="email"
-              className="block text-sm font-medium text-gray-700"
+              className="block text-sm font-medium text-gray-300"
             >
               Email Address
             </label>
@@ -78,14 +84,14 @@ export default function Signup(): JSX.Element {
               ref={emailRef}
               type="email"
               id="email"
-              className="mt-1 block w-full px-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="mt-1 block w-full px-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-gray-700 text-white"
               required
             />
           </div>
           <div className="mb-6">
             <label
               htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
+              className="block text-sm font-medium text-gray-300"
             >
               Password
             </label>
@@ -93,22 +99,22 @@ export default function Signup(): JSX.Element {
               ref={passwordRef}
               type="password"
               id="password"
-              className="mt-1 block w-full px-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="mt-1 block w-full px-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-gray-700 text-white"
               required
             />
           </div>
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-200"
           >
             Sign Up
           </button>
         </form>
-        <p className="mt-4 text-center text-sm text-gray-600">
+        <p className="mt-6 text-center text-sm text-gray-400">
           Already have an account?{" "}
           <button
             onClick={() => router.push("/login")}
-            className="text-blue-600 hover:underline"
+            className="text-blue-500 hover:underline"
           >
             Login
           </button>
