@@ -1,12 +1,45 @@
 "use client";
+import axios from "axios";
 import { useRouter } from "next/navigation";
+import { useRef } from "react";
 
 export default function Login(): JSX.Element {
   const router = useRouter();
+  const emailRef = useRef<HTMLInputElement | null>(null);
+  const passwordRef = useRef<HTMLInputElement | null>(null);
 
-  const handleLogin = (event: React.FormEvent) => {
+  const validateInputs = () => {
+    if (!emailRef.current?.value || !passwordRef.current?.value) {
+      alert("Please fill in both fields");
+      return false;
+    }
+    return true;
+  };
+
+  const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault();
-    router.push("/chat");
+    if (!emailRef.current || !passwordRef.current) {
+      return;
+    }
+    if (!validateInputs()) {
+      return;
+    }
+
+    const email = emailRef.current.value;
+    const password = passwordRef.current.value;
+
+    try {
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/login`,
+        { email, password }
+      );
+
+      localStorage.setItem("token", res.data.token);
+
+      router.push("/chat");
+    } catch (error) {
+      alert("Login failed. Please check your credentials.");
+    }
   };
 
   return (
@@ -24,6 +57,7 @@ export default function Login(): JSX.Element {
               Email Address
             </label>
             <input
+              ref={emailRef}
               type="email"
               id="email"
               className="mt-1 block w-full px-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -38,6 +72,7 @@ export default function Login(): JSX.Element {
               Password
             </label>
             <input
+              ref={passwordRef}
               type="password"
               id="password"
               className="mt-1 block w-full px-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"

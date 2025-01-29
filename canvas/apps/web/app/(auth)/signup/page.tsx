@@ -1,12 +1,48 @@
 "use client";
+import axios from "axios";
 import { useRouter } from "next/navigation";
+import { useRef } from "react";
 
 export default function Signup(): JSX.Element {
   const router = useRouter();
+  const nameRef = useRef<HTMLInputElement | null>(null);
+  const emailRef = useRef<HTMLInputElement | null>(null);
+  const passwordRef = useRef<HTMLInputElement | null>(null);
 
-  const handleSignup = (event: React.FormEvent) => {
+  const validateInputs = () => {
+    if (
+      !nameRef.current?.value ||
+      !emailRef.current?.value ||
+      !passwordRef.current?.value
+    ) {
+      alert("Please fill in all fields");
+      return false;
+    }
+    return true;
+  };
+
+  const handleSignup = async (event: React.FormEvent) => {
     event.preventDefault();
-    router.push("/");
+
+    if (!validateInputs()) {
+      return;
+    }
+
+    const name = nameRef.current!.value;
+    const email = emailRef.current!.value;
+    const password = passwordRef.current!.value;
+
+    try {
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/signup`,
+        { name, email, password }
+      );
+
+      alert("Signup successful. Please log in.");
+      router.push("/login");
+    } catch (error) {
+      alert("Signup failed. Please try again.");
+    }
   };
 
   return (
@@ -24,6 +60,7 @@ export default function Signup(): JSX.Element {
               Full Name
             </label>
             <input
+              ref={nameRef}
               type="text"
               id="name"
               className="mt-1 block w-full px-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -38,6 +75,7 @@ export default function Signup(): JSX.Element {
               Email Address
             </label>
             <input
+              ref={emailRef}
               type="email"
               id="email"
               className="mt-1 block w-full px-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -52,6 +90,7 @@ export default function Signup(): JSX.Element {
               Password
             </label>
             <input
+              ref={passwordRef}
               type="password"
               id="password"
               className="mt-1 block w-full px-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
