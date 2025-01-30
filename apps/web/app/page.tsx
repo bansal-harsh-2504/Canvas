@@ -1,8 +1,11 @@
 "use client";
 import { useRouter } from "next/navigation";
+import useAuthStore from "../store/useStore";
 
 export default function Home(): JSX.Element {
   const router = useRouter();
+  const { user } = useAuthStore();
+  console.log(user?.token);
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
@@ -18,7 +21,12 @@ export default function Home(): JSX.Element {
         </section>
 
         <section className="text-center">
-          <button className="bg-green-500 text-white px-6 py-3 rounded-lg text-lg font-medium shadow hover:bg-green-600">
+          <button
+            onClick={() => {
+              router.push("/rooms");
+            }}
+            className="bg-green-500 text-white px-6 py-3 rounded-lg text-lg font-medium shadow hover:bg-green-600"
+          >
             Start a Drawing Session
           </button>
         </section>

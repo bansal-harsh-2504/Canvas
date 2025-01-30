@@ -1,9 +1,14 @@
 import axios from "axios";
 import { ChatRoomClient } from "./ChatRoomClient";
+import useAuthStore from "../store/useStore";
 
 async function getChats(slug: string) {
+  const { user } = useAuthStore();
+  if (!user) {
+    return;
+  }
   const res = await axios.get(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}/chats/${slug}`
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}?token=${user?.token}/chats/${slug}`
   );
   return res.data?.messages.reverse();
 }
