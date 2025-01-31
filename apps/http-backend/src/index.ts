@@ -164,6 +164,17 @@ app.get("/chats/:slug", async (req, res) => {
   });
 });
 
+app.get("/verify-token", middleware, (req, res) => {
+  if (!req.userId) {
+    res.status(401).json({
+      message: "Invalid token",
+    });
+  }
+  res.json({
+    message: "Success",
+  });
+});
+
 app.get("/", (req, res) => {
   res.send("API Working!");
 });

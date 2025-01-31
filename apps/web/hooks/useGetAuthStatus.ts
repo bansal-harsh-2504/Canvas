@@ -1,15 +1,18 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import useAuthStore from "../store/useStore";
+import { useRouter } from "next/navigation";
 
 const useGetAuthStatus = () => {
   const { user, logout } = useAuthStore();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     if (!user?.token) {
       logout();
+      router.push("/login");
       setLoading(false);
       return;
     }

@@ -1,10 +1,14 @@
+"use client"
 import axios from "axios";
 import { ChatRoomClient } from "./ChatRoomClient";
 import useAuthStore from "../store/useStore";
+import { useRouter } from "next/navigation";
 
 async function getChats(slug: string) {
   const { user } = useAuthStore();
+  const router = useRouter();
   if (!user) {
+    router.push('/login');
     return;
   }
   const res = await axios.get(
