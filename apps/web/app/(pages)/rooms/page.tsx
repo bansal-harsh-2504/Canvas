@@ -1,12 +1,12 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSocket } from "../../../hooks/useSocket";
 import toast from "react-hot-toast";
 
 export default function RoomPage(): JSX.Element {
   const router = useRouter();
-  const { socket, loading, errMessage } = useSocket();
+  const { socket, loading } = useSocket();
   const [roomName, setRoomName] = useState("");
 
   const handleCreateRoom = () => {
@@ -26,12 +26,6 @@ export default function RoomPage(): JSX.Element {
       toast.error("Please enter a unique room name.");
     }
   };
-
-  useEffect(() => {
-    if (errMessage) {
-      toast.error(errMessage);
-    }
-  }, [errMessage]);
 
   return (
     <div className="min-h-[90.7vh] bg-gray-900 text-white  items-center justify-center">

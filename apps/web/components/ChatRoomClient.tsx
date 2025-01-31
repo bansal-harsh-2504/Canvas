@@ -1,18 +1,33 @@
 "use client";
-
 import { useEffect, useState, useRef } from "react";
 import { useSocket } from "../hooks/useSocket";
+import axios from "axios";
+import useAuthStore from "../store/useStore";
 
-export function ChatRoomClient({
-  messages,
-  slug,
-}: {
-  messages: { message: string }[];
-  slug: string;
-}): JSX.Element {
-  const [chats, setChats] = useState(messages);
+export function ChatRoomClient({ slug }: { slug: string }) {
+  const [chats, setChats] = useState<{ message: string }[]>([]);
   const { socket, loading } = useSocket();
   const messageRef = useRef<HTMLInputElement | null>(null);
+  const { user } = useAuthStore();
+
+  useEffect(() => {
+    const fetchMessages = async () => {
+      if (!user) return;
+      try {
+        const res = await axios.get(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/chats/${slug}`,
+          {
+            headers: { authorization: `Bearer ${user.token}` },
+          }
+        );
+        setChats(res.data?.messages?.reverse() || []);
+      } catch (error) {
+        console.error("Failed to fetch messages", error);
+      }
+    };
+
+    fetchMessages();
+  }, [slug, user]);
 
   useEffect(() => {
     if (socket && !loading) {
@@ -26,7 +41,7 @@ export function ChatRoomClient({
       socket.onmessage = (event) => {
         const parsedData = JSON.parse(event.data);
         if (parsedData.type === "chat") {
-          setChats((chats) => [...chats, parsedData.message]);
+          setChats((prevChats) => [...prevChats, parsedData.message]);
         }
       };
     }
@@ -39,7 +54,6 @@ export function ChatRoomClient({
   }, [socket, loading, slug]);
 
   const handleSendMessage = () => {
-    console.log(loading);
     if (messageRef.current && socket && !loading) {
       const message = messageRef.current.value;
       socket.send(
@@ -49,7 +63,7 @@ export function ChatRoomClient({
           slug,
         })
       );
-      setChats((chats) => [...chats, { message }]);
+      setChats((prevChats) => [...prevChats, { message }]);
       messageRef.current.value = "";
     }
   };
@@ -69,7 +83,7 @@ export function ChatRoomClient({
         placeholder="Type a message"
       />
       <button
-        onClick={() => handleSendMessage()}
+        onClick={handleSendMessage}
         className="bg-blue-500 text-white p-2 rounded hover:cursor-pointer"
       >
         Send Message

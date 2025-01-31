@@ -1,4 +1,4 @@
-import ChatRoom from "../../../../components/ChatRoom";
+import { ChatRoomClient } from "../../../../components/ChatRoomClient";
 
 export default async function ({
   params,
@@ -11,7 +11,7 @@ export default async function ({
   return (
     <>
       <div>
-        <ChatRoom slug={slug} />
+        <ChatRoomClient slug={slug} />
       </div>
     </>
   );

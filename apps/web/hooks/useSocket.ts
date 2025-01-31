@@ -5,7 +5,6 @@ import useAuthStore from "../store/useStore";
 export function useSocket() {
   const [loading, setLoading] = useState(true);
   const [socket, setSocket] = useState<WebSocket | null>(null);
-  const [errMessage, setErrMessage] = useState("");
   const { user } = useAuthStore();
 
   useEffect(() => {
@@ -36,6 +35,5 @@ export function useSocket() {
   return {
     socket,
     loading,
-    errMessage,
   };
 }

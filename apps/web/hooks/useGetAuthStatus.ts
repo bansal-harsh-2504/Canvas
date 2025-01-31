@@ -11,7 +11,6 @@ const useGetAuthStatus = () => {
 
   useEffect(() => {
     if (!user?.token) {
-      logout();
       router.push("/login");
       setLoading(false);
       return;
@@ -23,7 +22,7 @@ const useGetAuthStatus = () => {
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/verify-token`,
           {
             headers: {
-              Authorization: `Bearer ${user.token}`,
+              authorization: `Bearer ${user.token}`,
             },
           }
         );
