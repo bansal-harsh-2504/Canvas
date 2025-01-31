@@ -1,30 +1,37 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSocket } from "../../../hooks/useSocket";
+import toast from "react-hot-toast";
 
 export default function RoomPage(): JSX.Element {
   const router = useRouter();
+  const { socket, loading, errMessage } = useSocket();
   const [roomName, setRoomName] = useState("");
 
   const handleCreateRoom = () => {
+    if (loading || !socket) {
+      return;
+    }
     if (roomName.trim()) {
-      // API call
+      socket.send(
+        JSON.stringify({
+          type: "join_room",
+          slug: roomName,
+        })
+      );
 
       router.push(`/room/${roomName}`);
     } else {
-      alert("Please enter a unique room name.");
+      toast.error("Please enter a unique room name.");
     }
   };
 
-  const handleJoinRoom = () => {
-    if (roomName.trim()) {
-      // API call
-
-      router.push(`/room/${roomName}`);
-    } else {
-      alert("Please enter a valid room name.");
+  useEffect(() => {
+    if (errMessage) {
+      toast.error(errMessage);
     }
-  };
+  }, [errMessage]);
 
   return (
     <div className="min-h-[90.7vh] bg-gray-900 text-white  items-center justify-center">
@@ -49,10 +56,10 @@ export default function RoomPage(): JSX.Element {
               onChange={(e) => setRoomName(e.target.value)}
             />
             <button
-              onClick={handleJoinRoom}
+              onClick={handleCreateRoom}
               className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700"
             >
-              Join Room
+              {loading ? "Joining..." : "Join Room"}
             </button>
           </div>
 
@@ -71,7 +78,7 @@ export default function RoomPage(): JSX.Element {
               onClick={handleCreateRoom}
               className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
             >
-              Create Room
+              {loading ? "Creating..." : "Create Room"}
             </button>
           </div>
         </div>

@@ -2,18 +2,27 @@
 import Link from "next/link";
 import useAuthStore from "../store/useStore";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import useGetAuthStatus from "../hooks/useGetAuthStatus";
 
 export function Navbar() {
   const router = useRouter();
   const { isAuthenticated, logout } = useAuthStore();
+  const { loading, error } = useGetAuthStatus();
 
   const handleLogout = async () => {
     logout();
     router.push("/login");
   };
 
+  useEffect(() => {
+    if (error) {
+      console.error("Authentication error:", error); 
+    }
+  }, [error]);
+
   return (
-    <header className="mx-auto dark:bg-background p-6 border-b  w-full bg-emerald-600">
+    <header className="mx-auto dark:bg-background p-6 border-b w-full bg-emerald-600">
       <nav className="flex justify-between items-center">
         <h1 className="text-2xl dark:text-black font-bold text-gray-900">
           <Link href="/" className="text-2xl font-semibold text-yellow-500">
@@ -21,11 +30,10 @@ export function Navbar() {
           </Link>
         </h1>
         <div className="hidden md:flex justify-center items-center space-x-6">
-          {isAuthenticated ? (
-            <button
-              className=" bg-yellow-500 text-white"
-              onClick={handleLogout}
-            >
+          {loading ? (
+            <p>Loading...</p>
+          ) : isAuthenticated ? (
+            <button className="bg-yellow-500 text-white" onClick={handleLogout}>
               Logout
             </button>
           ) : (

@@ -39,10 +39,15 @@ wss.on("connection", function connection(ws, request) {
   const queryParams = new URLSearchParams(
     url.includes("?") ? url.split("?")[1] : ""
   );
-  const token = queryParams.get("token") || "";
+  const token = queryParams.get("token") as string;
+  if (!token) {
+    ws.send(JSON.stringify({ error: "Invalid jwt" }));
+    return;
+  }
   const userId = checkUser(token);
   if (!userId) {
     ws.close();
+    ws.send(JSON.stringify({ error: "Invalid jwt" }));
     return;
   }
   const user: User = { ws, rooms: new Set(), userId };
@@ -66,14 +71,20 @@ wss.on("connection", function connection(ws, request) {
         let roomId = roomsMap.get(slug);
 
         if (!roomId) {
-          const room = await prismaClient.room.create({
-            data: {
-              adminId: userId,
-              slug,
-            },
-          });
-          roomId = room.id;
-          rooms.set(slug, new Set());
+          try {
+            const room = await prismaClient.room.create({
+              data: {
+                adminId: userId,
+                slug,
+              },
+            });
+            roomId = room.id;
+            rooms.set(slug, new Set());
+          } catch (error) {
+            console.error("Error creating room:", error);
+            ws.send(JSON.stringify({ error: "Error creating room" }));
+            return;
+          }
         }
         user.rooms.add(slug);
 
