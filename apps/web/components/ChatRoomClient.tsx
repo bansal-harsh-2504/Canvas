@@ -8,16 +8,16 @@ export function ChatRoomClient({ slug }: { slug: string }) {
   const [chats, setChats] = useState<{ message: string }[]>([]);
   const { socket, loading } = useSocket();
   const messageRef = useRef<HTMLInputElement | null>(null);
-  const { user } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
 
   useEffect(() => {
     const fetchMessages = async () => {
-      if (!user) return;
+      if (!isAuthenticated) return;
       try {
         const res = await axios.get(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/chats/${slug}`,
           {
-            headers: { authorization: `Bearer ${user.token}` },
+            headers: { authorization: `Bearer ${user?.token}` },
           }
         );
         setChats(res.data?.messages?.reverse() || []);
@@ -27,7 +27,7 @@ export function ChatRoomClient({ slug }: { slug: string }) {
     };
 
     fetchMessages();
-  }, [slug, user]);
+  }, [slug, isAuthenticated]);
 
   useEffect(() => {
     if (socket && !loading) {
@@ -41,7 +41,10 @@ export function ChatRoomClient({ slug }: { slug: string }) {
       socket.onmessage = (event) => {
         const parsedData = JSON.parse(event.data);
         if (parsedData.type === "chat") {
-          setChats((prevChats) => [...prevChats, parsedData.message]);
+          setChats((prevChats) => [
+            ...prevChats,
+            { message: parsedData.message },
+          ]);
         }
       };
     }

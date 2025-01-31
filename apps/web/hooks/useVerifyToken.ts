@@ -3,14 +3,13 @@ import axios from "axios";
 import useAuthStore from "../store/useStore";
 import { useRouter } from "next/navigation";
 
-const useGetAuthStatus = () => {
-  const { user, logout } = useAuthStore();
+const useVerifyToken = () => {
+  const { user, logout, isAuthenticated } = useAuthStore();
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
-    if (!user?.token) {
+    if (!isAuthenticated) {
       router.push("/login");
       setLoading(false);
       return;
@@ -22,7 +21,7 @@ const useGetAuthStatus = () => {
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/verify-token`,
           {
             headers: {
-              authorization: `Bearer ${user.token}`,
+              authorization: `Bearer ${user?.token}`,
             },
           }
         );
@@ -32,19 +31,17 @@ const useGetAuthStatus = () => {
         }
       } catch (err) {
         logout();
-        setError("Failed to verify token.");
       } finally {
         setLoading(false);
       }
     };
 
     checkAuthStatus();
-  }, [user]);
+  }, [isAuthenticated]);
 
   return {
     loading,
-    error,
   };
 };
 
-export default useGetAuthStatus;
+export default useVerifyToken;

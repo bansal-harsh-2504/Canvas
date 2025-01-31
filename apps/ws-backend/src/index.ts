@@ -69,17 +69,24 @@ wss.on("connection", function connection(ws, request) {
             JSON.stringify({ error: "Slug is required to join the room" })
           );
         let roomId = roomsMap.get(slug);
-
         if (!roomId) {
           try {
-            const room = await prismaClient.room.create({
-              data: {
-                adminId: userId,
-                slug,
-              },
+            const existingRoom = await prismaClient.room.findUnique({
+              where: { slug },
             });
-            roomId = room.id;
-            rooms.set(slug, new Set());
+            if (!existingRoom) {
+              const room = await prismaClient.room.create({
+                data: {
+                  adminId: userId,
+                  slug,
+                },
+              });
+              roomId = room.id;
+              rooms.set(slug, new Set());
+            } else {
+              roomId = existingRoom.id;
+              rooms.set(slug, new Set());
+            }
           } catch (error) {
             console.error("Error creating room:", error);
             ws.send(JSON.stringify({ error: "Error creating room" }));

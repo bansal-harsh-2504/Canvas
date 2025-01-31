@@ -3,10 +3,11 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import useAuthStore from "../../../store/useStore";
+import toast from "react-hot-toast";
 
 export default function Login(): JSX.Element {
   const router = useRouter();
-  const { login, isAuthenticated, user } = useAuthStore();
+  const { login, isAuthenticated } = useAuthStore();
   const [loading, setLoading] = useState(false);
 
   const emailRef = useRef<HTMLInputElement | null>(null);
@@ -14,7 +15,7 @@ export default function Login(): JSX.Element {
 
   const validateInputs = () => {
     if (!emailRef.current?.value || !passwordRef.current?.value) {
-      alert("Please fill in both fields");
+      toast.error("Please fill in both fields");
       return false;
     }
     return true;
@@ -29,6 +30,7 @@ export default function Login(): JSX.Element {
     }
 
     if (!validateInputs()) {
+      setLoading(false);
       return;
     }
 
@@ -53,7 +55,7 @@ export default function Login(): JSX.Element {
 
       router.push("/rooms");
     } catch (error) {
-      alert("Login failed. Please check your credentials.");
+      toast.error("Login failed. Please check your credentials.");
     } finally {
       setLoading(false);
     }
@@ -63,7 +65,7 @@ export default function Login(): JSX.Element {
     if (isAuthenticated) {
       router.push("/rooms");
     }
-  }, [user]);
+  }, [isAuthenticated]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900">

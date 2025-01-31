@@ -40,11 +40,11 @@ export default function RoomPage(): JSX.Element {
         <div className="mt-8 flex gap-8">
           <div className="flex-1 bg-gray-800 rounded-lg p-6 shadow-lg">
             <h2 className="text-2xl font-semibold text-blue-500 mb-4">
-              Join a Room
+              Join/Create a Room
             </h2>
             <input
               type="text"
-              placeholder="Enter room name"
+              placeholder="Enter a unique room name"
               className="w-full px-4 py-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
               value={roomName}
               onChange={(e) => setRoomName(e.target.value)}
@@ -54,25 +54,6 @@ export default function RoomPage(): JSX.Element {
               className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700"
             >
               {loading ? "Joining..." : "Join Room"}
-            </button>
-          </div>
-
-          <div className="flex-1 bg-gray-800 rounded-lg p-6 shadow-lg">
-            <h2 className="text-2xl font-semibold text-blue-500 mb-4">
-              Create a Room
-            </h2>
-            <input
-              type="text"
-              placeholder="Enter room name"
-              className="w-full px-4 py-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
-              value={roomName}
-              onChange={(e) => setRoomName(e.target.value)}
-            />
-            <button
-              onClick={handleCreateRoom}
-              className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
-            >
-              {loading ? "Creating..." : "Create Room"}
             </button>
           </div>
         </div>

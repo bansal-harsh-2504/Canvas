@@ -1,11 +1,8 @@
 "use client";
 import { useRouter } from "next/navigation";
-import useAuthStore from "../store/useStore";
 
 export default function Home(): JSX.Element {
   const router = useRouter();
-  const { user } = useAuthStore();
-  console.log(user?.token);
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">

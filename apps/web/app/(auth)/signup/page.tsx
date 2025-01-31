@@ -1,15 +1,17 @@
 "use client";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import useAuthStore from "../../../store/useStore";
+import toast from "react-hot-toast";
 
 export default function Signup(): JSX.Element {
   const router = useRouter();
   const nameRef = useRef<HTMLInputElement | null>(null);
   const emailRef = useRef<HTMLInputElement | null>(null);
   const passwordRef = useRef<HTMLInputElement | null>(null);
-  const { login, isAuthenticated, user } = useAuthStore();
+  const [loading, setLoading] = useState(false);
+  const { login, isAuthenticated } = useAuthStore();
 
   const validateInputs = () => {
     if (
@@ -17,7 +19,7 @@ export default function Signup(): JSX.Element {
       !emailRef.current?.value ||
       !passwordRef.current?.value
     ) {
-      alert("Please fill in all fields");
+      toast.error("Please fill in all the fields");
       return false;
     }
     return true;
@@ -25,8 +27,10 @@ export default function Signup(): JSX.Element {
 
   const handleSignup = async (event: React.FormEvent) => {
     event.preventDefault();
+    setLoading(true);
 
     if (!validateInputs()) {
+      setLoading(false);
       return;
     }
 
@@ -47,7 +51,9 @@ export default function Signup(): JSX.Element {
 
       router.push("/");
     } catch (error) {
-      alert("Signup failed. Please try again.");
+      toast.error("Signup failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -55,7 +61,7 @@ export default function Signup(): JSX.Element {
     if (isAuthenticated) {
       router.push("/rooms");
     }
-  }, [user]);
+  }, [isAuthenticated]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900">
@@ -113,7 +119,7 @@ export default function Signup(): JSX.Element {
             type="submit"
             className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-200"
           >
-            Sign Up
+            {loading ? "Signing up..." : "Sign Up"}
           </button>
         </form>
         <p className="mt-6 text-center text-sm text-gray-400">

@@ -5,13 +5,15 @@ import useAuthStore from "../store/useStore";
 export function useSocket() {
   const [loading, setLoading] = useState(true);
   const [socket, setSocket] = useState<WebSocket | null>(null);
-  const { user } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
 
   useEffect(() => {
-    if (!user) return;
+    if (!isAuthenticated) return;
+
     const ws = new WebSocket(
       `${process.env.NEXT_PUBLIC_WS_URL}?token=${user?.token}`
     );
+
     ws.onopen = () => {
       setLoading(false);
       setSocket(ws);
@@ -30,10 +32,7 @@ export function useSocket() {
         ws.close();
       }
     };
-  }, []);
+  }, [isAuthenticated]);
 
-  return {
-    socket,
-    loading,
-  };
+  return { socket, loading };
 }
