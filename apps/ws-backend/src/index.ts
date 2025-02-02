@@ -177,7 +177,7 @@ wss.on("connection", function connection(ws, request) {
                 message,
               },
             });
-            console.log("saved to db");
+            console.log("chat saved to db");
           } catch {
             console.log("Couldn't save message to database");
           }
@@ -201,12 +201,6 @@ wss.on("connection", function connection(ws, request) {
 
     user.rooms.forEach((slug) => {
       rooms.get(slug)?.delete(user);
-
-      if (rooms.get(slug)?.size === 0) {
-        rooms.delete(slug);
-        roomsMap.delete(slug);
-        console.log("Room (%s) has been removed because it is empty", slug);
-      }
     });
   });
 });
