@@ -4,7 +4,7 @@ import { useSocket } from "../hooks/useSocket";
 import axios from "axios";
 import useAuthStore from "../store/useStore";
 
-export function ChatRoomClient({ slug }: { slug: string }) {
+export function ChatRoomClient({ slug }: { slug: string }): JSX.Element {
   const [chats, setChats] = useState<{ message: string }[]>([]);
   const { socket, loading } = useSocket();
   const messageRef = useRef<HTMLInputElement | null>(null);

@@ -142,7 +142,10 @@ app.get("/chats/:slug", async (req, res) => {
   });
 
   if (!room) {
-    res.status(401).json({ message: "Invalid room" });
+    res.json({
+      messages: [],
+      message: "No messages in room",
+    });
     return;
   }
 
