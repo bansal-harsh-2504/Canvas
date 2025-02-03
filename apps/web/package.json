@@ -4,15 +4,15 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack --port 3001",
+    "dev": "next dev --turbopack -p 3001",
     "build": "next build",
     "start": "next start",
     "lint": "next lint --max-warnings 0",
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@types/axios": "^0.14.4",
     "axios": "^1.7.9",
+    "jsonwebtoken": "^9.0.2",
     "next": "^15.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -23,6 +23,8 @@
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@tailwindcss/postcss": "^4.0.0",
+    "@types/axios": "^0.14.4",
+    "@types/jsonwebtoken": "^9.0.8",
     "@types/node": "^20.17.6",
     "@types/react": "18.3.1",
     "@types/react-dom": "18.3.0",

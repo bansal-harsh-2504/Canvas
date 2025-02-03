@@ -2,7 +2,7 @@
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import useAuthStore from "../../../store/useStore";
+import useAuthStore from "@/store/useStore";
 import toast from "react-hot-toast";
 
 export default function Login(): JSX.Element {
@@ -40,7 +40,8 @@ export default function Login(): JSX.Element {
     try {
       const res = await axios.post(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/login`,
-        { email, password }
+        { email, password },
+        { withCredentials: true }
       );
       const { userId, name, token } = res.data;
 

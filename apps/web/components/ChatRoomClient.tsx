@@ -1,33 +1,33 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
-import { useSocket } from "../hooks/useSocket";
+import { useSocket } from "@/hooks/useSocket";
 import axios from "axios";
-import useAuthStore from "../store/useStore";
+import useAuthStore from "@/store/useStore";
 
 export function ChatRoomClient({ slug }: { slug: string }): JSX.Element {
   const [chats, setChats] = useState<{ message: string }[]>([]);
   const { socket, loading } = useSocket();
   const messageRef = useRef<HTMLInputElement | null>(null);
-  const { isAuthenticated, user } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
 
   useEffect(() => {
+    if (!isAuthenticated) return;
     const fetchMessages = async () => {
-      if (!isAuthenticated) return;
       try {
         const res = await axios.get(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/chats/${slug}`,
           {
-            headers: { authorization: `Bearer ${user?.token}` },
+            withCredentials: true,
           }
         );
-        setChats(res.data?.messages?.reverse() || []);
+        setChats(res.data?.messages || []);
       } catch (error) {
         console.error("Failed to fetch messages", error);
       }
     };
 
     fetchMessages();
-  }, [slug, isAuthenticated]);
+  }, [slug, user?.token]);
 
   useEffect(() => {
     if (socket && !loading) {

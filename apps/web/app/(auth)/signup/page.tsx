@@ -41,7 +41,8 @@ export default function Signup(): JSX.Element {
     try {
       const res = await axios.post(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/signup`,
-        { name, email, password }
+        { name, email, password },
+        { withCredentials: true }
       );
       const { token, userId } = res.data;
 
