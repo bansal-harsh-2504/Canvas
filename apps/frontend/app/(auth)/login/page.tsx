@@ -1,10 +1,13 @@
 "use client";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { JSX, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import useAuthStore from "@/store/useStore";
+import toast from "react-hot-toast";
 
-export default function Login(): JSX.Element {
+export default function Login(): React.JSX.Element {
   const router = useRouter();
+  const { login, isAuthenticated } = useAuthStore();
   const [loading, setLoading] = useState(false);
 
   const emailRef = useRef<HTMLInputElement | null>(null);
@@ -12,6 +15,7 @@ export default function Login(): JSX.Element {
 
   const validateInputs = () => {
     if (!emailRef.current?.value || !passwordRef.current?.value) {
+      toast.error("Please fill in both fields");
       return false;
     }
     return true;
@@ -36,7 +40,8 @@ export default function Login(): JSX.Element {
     try {
       const res = await axios.post(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/login`,
-        { email, password }
+        { email, password },
+        { withCredentials: true }
       );
       const { userId, name, token } = res.data;
 
@@ -47,15 +52,34 @@ export default function Login(): JSX.Element {
         token,
       };
 
+      login(user);
+
       router.push("/rooms");
     } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 400) {
+          toast.error("Invalid input. Please check your details.");
+        } else if (error.response?.status === 401) {
+          toast.error("Unauthorized. Please check your credentials.");
+        } else {
+          toast.error("Login failed. Please try again.");
+        }
+      } else {
+        toast.error("An unexpected error occurred.");
+      }
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push("/rooms");
+    }
+  }, [isAuthenticated]);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900">
+    <div className="h-full flex items-center justify-center bg-gray-900">
       <div className="w-full max-w-md bg-gray-800 text-white rounded-lg shadow-lg p-6">
         <h1 className="text-3xl font-semibold mb-6 text-center text-blue-500">
           Login

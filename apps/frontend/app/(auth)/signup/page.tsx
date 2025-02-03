@@ -1,14 +1,17 @@
 "use client";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { JSX, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import useAuthStore from "@/store/useStore";
+import toast from "react-hot-toast";
 
-export default function Signup(): JSX.Element {
+export default function Signup(): React.JSX.Element {
   const router = useRouter();
   const nameRef = useRef<HTMLInputElement | null>(null);
   const emailRef = useRef<HTMLInputElement | null>(null);
   const passwordRef = useRef<HTMLInputElement | null>(null);
   const [loading, setLoading] = useState(false);
+  const { login, isAuthenticated } = useAuthStore();
 
   const validateInputs = () => {
     if (
@@ -16,6 +19,7 @@ export default function Signup(): JSX.Element {
       !emailRef.current?.value ||
       !passwordRef.current?.value
     ) {
+      toast.error("Please fill in all the fields");
       return false;
     }
     return true;
@@ -37,21 +41,41 @@ export default function Signup(): JSX.Element {
     try {
       const res = await axios.post(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/signup`,
-        { name, email, password }
+        { name, email, password },
+        { withCredentials: true }
       );
       const { token, userId } = res.data;
 
       const user = { token, userId, name };
 
+      login(user);
+
       router.push("/");
     } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 400) {
+          toast.error("Invalid input. Please check your details.");
+        } else if (error.response?.status === 409) {
+          toast.error("User already exists. Try logging in.");
+        } else {
+          toast.error("Signup failed. Please try again.");
+        }
+      } else {
+        toast.error("An unexpected error occurred.");
+      }
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push("/rooms");
+    }
+  }, [isAuthenticated]);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900">
+    <div className="h-full flex items-center justify-center bg-gray-900">
       <div className="w-full max-w-md bg-gray-800 text-white rounded-lg shadow-lg p-6">
         <h1 className="text-3xl font-semibold mb-6 text-center text-blue-500">
           Sign Up

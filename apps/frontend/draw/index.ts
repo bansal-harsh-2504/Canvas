@@ -116,7 +116,8 @@ function clearCanvas(
 
 async function getExistingShapes(slug: string) {
   const res = await axios.get(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}/chats/${slug}`
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/chats/${slug}`,
+    { withCredentials: true }
   );
   const messages = res.data.messages;
 

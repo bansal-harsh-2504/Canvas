@@ -50,6 +50,7 @@ export default function RoomPage(): JSX.Element {
               onChange={(e) => setRoomName(e.target.value)}
             />
             <button
+              type="submit"
               onClick={handleCreateRoom}
               className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700"
             >

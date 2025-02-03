@@ -56,7 +56,17 @@ export default function Login(): JSX.Element {
 
       router.push("/rooms");
     } catch (error) {
-      toast.error("Login failed. Please check your credentials.");
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 400) {
+          toast.error("Invalid input. Please check your details.");
+        } else if (error.response?.status === 401) {
+          toast.error("Unauthorized. Please check your credentials.");
+        } else {
+          toast.error("Login failed. Please try again.");
+        }
+      } else {
+        toast.error("An unexpected error occurred.");
+      }
     } finally {
       setLoading(false);
     }

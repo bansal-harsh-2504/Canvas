@@ -2,7 +2,7 @@
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import useAuthStore from "../../../store/useStore";
+import useAuthStore from "@/store/useStore";
 import toast from "react-hot-toast";
 
 export default function Signup(): JSX.Element {
@@ -52,7 +52,17 @@ export default function Signup(): JSX.Element {
 
       router.push("/");
     } catch (error) {
-      toast.error("Signup failed. Please try again.");
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 400) {
+          toast.error("Invalid input. Please check your details.");
+        } else if (error.response?.status === 409) {
+          toast.error("User already exists. Try logging in.");
+        } else {
+          toast.error("Signup failed. Please try again.");
+        }
+      } else {
+        toast.error("An unexpected error occurred.");
+      }
     } finally {
       setLoading(false);
     }

@@ -29,7 +29,7 @@ app.post("/signup", async (req, res) => {
   const data = createUserSchema.safeParse(req.body);
 
   if (!data.success) {
-    res.json({
+    res.status(400).json({
       message: "Incorrect inputs",
     });
     return;
@@ -43,7 +43,7 @@ app.post("/signup", async (req, res) => {
     });
 
     if (existingUser) {
-      res.status(400).json({ message: "User already exists" });
+      res.status(409).json({ message: "User already exists" });
       return;
     }
 
@@ -60,7 +60,6 @@ app.post("/signup", async (req, res) => {
     const token = jwt.sign({ userId: newUser.id }, JWT_SECRET, {
       expiresIn: "1h",
     });
-
     res
       .cookie("token", token, {
         secure: process.env.NODE_ENV === "production",
@@ -85,7 +84,7 @@ app.post("/login", async (req, res) => {
   const data = signInSchema.safeParse(req.body);
 
   if (!data.success) {
-    res.json({
+    res.status(400).json({
       message: "Incorrect inputs",
     });
     return;
