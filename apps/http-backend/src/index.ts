@@ -11,12 +11,13 @@ import {
 import { prismaClient } from "@repo/db/client";
 import bcrypt from "bcrypt";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 
 const app = express();
-
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+app.use(cors({ credentials: true }));
 
 app.post("/signup", async (req, res) => {
   const data = createUserSchema.safeParse(req.body);
@@ -50,17 +51,22 @@ app.post("/signup", async (req, res) => {
       },
     });
 
-    const token = jwt.sign(
-      { userId: newUser.id, email: newUser.email },
-      JWT_SECRET,
-      { expiresIn: "1h" }
-    );
-
-    res.status(201).json({
-      message: "User created successfully",
-      token,
-      userID: newUser.id,
+    const token = jwt.sign({ userId: newUser.id }, JWT_SECRET, {
+      expiresIn: "1h",
     });
+
+    res
+      .cookie("token", token, {
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 60 * 60 * 1000,
+        httpOnly: true,
+      })
+      .status(201)
+      .json({
+        message: "User created successfully",
+        token,
+      });
   } catch (error) {
     console.error(error);
     res.status(500).json({
@@ -94,12 +100,27 @@ app.post("/login", async (req, res) => {
     expiresIn: "1h",
   });
 
-  res.status(201).json({
-    message: "Successfully signed in",
-    token,
-    userId: user.id,
-    name: user.name,
+  res
+    .cookie("token", token, {
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 60 * 60 * 1000,
+      httpOnly: true,
+    })
+    .status(201)
+    .json({
+      message: "Successfully signed in",
+      token,
+    });
+});
+
+app.post("/logout", (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
   });
+  res.json({ message: "Logged out successfully" });
 });
 
 app.post("/room", middleware, async (req, res) => {
@@ -132,7 +153,7 @@ app.post("/room", middleware, async (req, res) => {
   }
 });
 
-app.get("/chats/:slug", async (req, res) => {
+app.get("/chats/:slug", middleware, async (req, res) => {
   const slug = req.params.slug;
 
   const room = await prismaClient.room.findFirst({
@@ -167,15 +188,8 @@ app.get("/chats/:slug", async (req, res) => {
   });
 });
 
-app.get("/verify-token", middleware, (req, res) => {
-  if (!req.userId) {
-    res.status(401).json({
-      message: "Invalid token",
-    });
-  }
-  res.json({
-    message: "Success",
-  });
+app.get("/verify", middleware, (req, res) => {
+  res.json({ message: "You have access!", userId: req.userId });
 });
 
 app.get("/", (req, res) => {

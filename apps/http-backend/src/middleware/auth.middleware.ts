@@ -2,17 +2,10 @@ import jwt, { TokenExpiredError, JsonWebTokenError } from "jsonwebtoken";
 import { NextFunction, Request, Response } from "express";
 
 export function middleware(req: Request, res: Response, next: NextFunction) {
-  let token: undefined | string = req.headers["authorization"] ?? "";
-
-  if (!token || !token.startsWith("Bearer ")) {
-    res.status(403).json({ message: "Unauthorized: Missing token" });
-    return;
-  }
-
-  token = token.split(" ")[1];
+  let token = req.cookies.token;
 
   if (!token) {
-    res.status(403).json({ message: "Unauthorized: Invalid token format" });
+    res.status(401).json({ message: "Unauthorized: Missing token" });
     return;
   }
 
