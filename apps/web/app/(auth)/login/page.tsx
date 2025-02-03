@@ -69,7 +69,7 @@ export default function Login(): JSX.Element {
   }, [isAuthenticated]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900">
+    <div className="h-full flex items-center justify-center bg-gray-900">
       <div className="w-full max-w-md bg-gray-800 text-white rounded-lg shadow-lg p-6">
         <h1 className="text-3xl font-semibold mb-6 text-center text-blue-500">
           Login

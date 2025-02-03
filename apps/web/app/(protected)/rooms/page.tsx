@@ -28,7 +28,7 @@ export default function RoomPage(): JSX.Element {
   };
 
   return (
-    <div className="min-h-[90.7vh] bg-gray-900 text-white  items-center justify-center">
+    <div className="h-full bg-gray-900 text-white  items-center justify-center">
       <div className="w-full max-w-4xl p-6">
         <h1 className="text-4xl font-semibold text-left text-white">
           Room Dashboard

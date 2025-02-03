@@ -1,9 +1,7 @@
 "use client";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import useAuthStore from "../../../store/useStore";
-import toast from "react-hot-toast";
+import { JSX, useRef, useState } from "react";
 
 export default function Signup(): JSX.Element {
   const router = useRouter();
@@ -11,7 +9,6 @@ export default function Signup(): JSX.Element {
   const emailRef = useRef<HTMLInputElement | null>(null);
   const passwordRef = useRef<HTMLInputElement | null>(null);
   const [loading, setLoading] = useState(false);
-  const { login, isAuthenticated } = useAuthStore();
 
   const validateInputs = () => {
     if (
@@ -19,7 +16,6 @@ export default function Signup(): JSX.Element {
       !emailRef.current?.value ||
       !passwordRef.current?.value
     ) {
-      toast.error("Please fill in all the fields");
       return false;
     }
     return true;
@@ -41,31 +37,21 @@ export default function Signup(): JSX.Element {
     try {
       const res = await axios.post(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/signup`,
-        { name, email, password },
-        { withCredentials: true }
+        { name, email, password }
       );
       const { token, userId } = res.data;
 
       const user = { token, userId, name };
 
-      login(user);
-
       router.push("/");
     } catch (error) {
-      toast.error("Signup failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      router.push("/rooms");
-    }
-  }, [isAuthenticated]);
-
   return (
-    <div className="h-full flex items-center justify-center bg-gray-900">
+    <div className="min-h-screen flex items-center justify-center bg-gray-900">
       <div className="w-full max-w-md bg-gray-800 text-white rounded-lg shadow-lg p-6">
         <h1 className="text-3xl font-semibold mb-6 text-center text-blue-500">
           Sign Up

@@ -32,8 +32,8 @@ export function RoomCanvas({ slug }: { slug: string }) {
     }
   }, [slug, loading, socket]);
 
-  if (!socket) {
-    return <div>Connecting to server....</div>;
+  if (loading || !socket) {
+    return <div>Connecting to ws server....</div>;
   }
 
   return (

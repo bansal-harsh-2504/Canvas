@@ -1,5 +1,4 @@
 import axios from "axios";
-import { useEffect } from "react";
 
 type Shape =
   | {
@@ -49,7 +48,10 @@ export async function initDraw(
     const width = e.clientX - startX;
     const height = e.clientY - startY;
 
-    if (height < 10 && width < 10) return;
+    if (height < 5 && width < 5) {
+      clearCanvas(existingShapes, canvas, ctx);
+      return;
+    }
 
     const shape: Shape = {
       type: "rect",
