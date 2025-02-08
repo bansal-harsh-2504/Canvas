@@ -193,6 +193,16 @@ app.get("/chats/:slug", middleware, async (req, res) => {
   });
 });
 
+app.get("/joined-rooms", middleware, async (req, res) => {
+  const userId = req.userId;
+  const rooms = await prismaClient.room.findMany({
+    where: {
+      adminId: userId,
+    },
+  });
+  console.log(rooms);
+  res.json(rooms.map((room) => room.slug));
+});
 app.get("/verify", middleware, (req, res) => {
   res.json({ message: "You have access!", userId: req.userId });
 });
