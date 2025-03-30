@@ -1,0 +1,27 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: .docker/Dockerfile.backend
+      args:
+        DB_URL: postgres://postgres:ilovemyindia@localhost:5432
+    ports:
+      - "3000:3000"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: .docker/Dockerfile.frontend
+      args:
+        DB_URL: postgres://postgres:ilovemyindia@localhost:5432
+    ports:
+      - "3002:3002"
+
+  ws:
+    build:
+      context: .
+      dockerfile: .docker/Dockerfile.ws
+      args:
+        DB_URL: postgres://postgres:ilovemyindia@localhost:5432
+    ports:
+      - "8080:8080"

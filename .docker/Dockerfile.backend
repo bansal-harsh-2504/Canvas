@@ -1,0 +1,22 @@
+FROM node:20 AS builder
+
+WORKDIR /usr/src/project
+
+COPY package.json pnpm-lock.yaml ./
+RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN pnpm install --frozen-lockfile
+
+COPY . .
+RUN pnpm run build
+
+# Generate Prisma Client
+RUN pnpm --filter db run prisma generate
+
+# Production Image
+FROM node:20
+
+WORKDIR /usr/src/project
+COPY --from=builder /usr/src/project ./
+
+EXPOSE 3000
+CMD ["pnpm", "run", "start:backend"]

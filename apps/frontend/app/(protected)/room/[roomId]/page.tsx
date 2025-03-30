@@ -10,3 +10,4 @@ export default async function CanvasPage({
 
   return <RoomCanvas slug={roomId} />;
 }
+www
