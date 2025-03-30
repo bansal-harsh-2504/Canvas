@@ -2,7 +2,6 @@
 import Link from "next/link";
 import useAuthStore from "@/store/useStore";
 import useLogout from "@/hooks/useLogout";
-import { Shapes } from "lucide-react";
 
 export function Navbar(): JSX.Element {
   const { isAuthenticated } = useAuthStore();
@@ -13,7 +12,6 @@ export function Navbar(): JSX.Element {
       <nav className="flex justify-between items-center px-[80px]">
         <h1 className="text-2xl dark:text-black font-bold text-gray-900">
           <Link href="/" className="flex items-center space-x-2 text-white">
-            <Shapes className="w-8 h-8" />
             <span className="text-3xl font-bold">Canvas</span>
           </Link>
         </h1>

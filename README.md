@@ -27,7 +27,7 @@ pnpm prisma generate
 
 ## Build the Project
 
-Run the build command in all folders except `web`:
+Run the build command:
 
 ```
 pnpm run build
@@ -35,7 +35,7 @@ pnpm run build
 
 ## Start the Development Server
 
-Run the development server in all folders except `web`:
+Run the development server:
 
 ```
 pnpm run dev
