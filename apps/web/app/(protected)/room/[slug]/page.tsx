@@ -1,13 +1,10 @@
 import { ChatRoomClient } from "@/components/ChatRoomClient";
-
 export default async function ({
   params,
 }: {
-  params: {
-    slug: string;
-  };
+  params: Promise<{ slug: string }>;
 }) {
-  const slug = (await params).slug;
+  const { slug } = await params;
   return (
     <>
       <div>

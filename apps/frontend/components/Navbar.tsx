@@ -3,8 +3,9 @@ import Link from "next/link";
 import useAuthStore from "@/store/useStore";
 import useLogout from "@/hooks/useLogout";
 import { Shapes } from "lucide-react";
+import React from "react";
 
-export function Navbar(): JSX.Element {
+export function Navbar(): React.JSX.Element {
   const { isAuthenticated } = useAuthStore();
   const logout = useLogout();
 

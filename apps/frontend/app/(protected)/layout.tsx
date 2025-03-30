@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import jwt from "jsonwebtoken";
+import { JSX } from "react";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -16,7 +17,7 @@ export default async function RoomsLayout({
   }
   try {
     jwt.verify(token, process.env.NEXT_PUBLIC_JWT_SECRET as string);
-  } catch (error) {
+  } catch {
     redirect("/");
   }
 

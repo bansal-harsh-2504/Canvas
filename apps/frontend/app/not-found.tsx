@@ -2,6 +2,7 @@
 import React from "react";
 import { Ghost, HomeIcon, MoveLeft } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
+import Link from "next/link";
 
 function App(): React.JSX.Element {
   return (
@@ -22,18 +23,18 @@ function App(): React.JSX.Element {
             Page Not Found
           </h2>
           <p className="text-gray-400 mb-8 max-w-md mx-auto">
-            Oops! It seems you've ventured into the void. The page you're
+            Oops! It seems you&apos;ve ventured into the void. The page you&apos;re
             looking for has vanished into the digital abyss.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
+            <Link
               href="/"
               className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-purple-600 hover:bg-purple-700 transition-colors text-white font-medium"
             >
               <HomeIcon className="w-5 h-5" />
               Return Home
-            </a>
+            </Link>
             <button
               onClick={() => window.history.back()}
               className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors text-gray-300 font-medium border border-gray-700"

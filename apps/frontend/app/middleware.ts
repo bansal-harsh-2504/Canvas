@@ -14,7 +14,7 @@ export function middleware(request: NextRequest) {
   if (isProtectedRoute && token) {
     try {
       jwt.verify(token, process.env.NEXT_PUBLIC_JWT_SECRET as string);
-    } catch (error) {
+    } catch {
       return NextResponse.redirect(new URL("/", request.url));
     }
   }
