@@ -1,4 +1,4 @@
-FROM node:20 AS builder
+FROM node:20
 
 WORKDIR /usr/src/project
 
@@ -9,10 +9,12 @@ COPY ./packages ./packages
 RUN corepack enable && corepack prepare pnpm@latest --activate
 RUN pnpm install
 
+ARG DATABASE_URL
+ENV DATABASE_URL=${DATABASE_URL}
+
 WORKDIR /usr/src/project/packages/db
 RUN pnpm exec prisma generate
-RUN pnpm exec prisma migrate deploy
-
+RUN 
 WORKDIR /usr/src/project/apps/frontend
 RUN pnpm run build
 
@@ -20,4 +22,4 @@ WORKDIR /usr/src/project
 
 EXPOSE 3002
 
-CMD ["pnpm", "run", "start:frontend"]
+CMD cd packages/db && pnpm exec prisma migrate deploy && cd ../.. && pnpm run start:frontend

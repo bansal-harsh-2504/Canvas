@@ -1,48 +1,63 @@
-version: "3.8"
-
 services:
   backend:
     build:
       context: .
       dockerfile: .docker/Dockerfile.backend
+      args:
+        DATABASE_URL: "postgres://postgres:password@db:5432/canvas-db"
     ports:
       - "3000:3000"
     depends_on:
       - db
     environment:
-      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_URL: "postgres://postgres:password@db:5432/canvas-db"
+    networks:
+      - my-network
 
   frontend:
     build:
       context: .
       dockerfile: .docker/Dockerfile.frontend
+      args:
+        DATABASE_URL: "postgres://postgres:password@db:5432/canvas-db"
     ports:
       - "3002:3002"
     depends_on:
-      - backend  # Waits for backend to be ready
+      - backend
     environment:
-      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_URL: "postgres://postgres:password@db:5432/canvas-db"
+    networks:
+      - my-network
 
   ws-server:
     build:
       context: .
       dockerfile: .docker/Dockerfile.ws
+      args:
+        DATABASE_URL: "postgres://postgres:password@db:5432/canvas-db"
     ports:
       - "8080:8080"
     depends_on:
-      - backend  # Waits for backend to be ready
+      - backend
+    networks:
+      - my-network
 
   db:
     image: postgres:15
     restart: always
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ilovemyindia
-      POSTGRES_DB: mydatabase
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: canvas-db
     ports:
       - "5432:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
+    networks:
+      - my-network
 
 volumes:
   db-data:
+
+networks:
+  my-network:
