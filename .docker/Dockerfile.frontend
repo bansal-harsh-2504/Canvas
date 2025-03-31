@@ -2,21 +2,22 @@ FROM node:20 AS builder
 
 WORKDIR /usr/src/project
 
-COPY package.json pnpm-lock.yaml ./
-RUN corepack enable && corepack prepare pnpm@latest --activate
-RUN pnpm install --frozen-lockfile
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY ./apps/frontend ./apps/frontend
+COPY ./packages ./packages
 
-COPY . .
-RUN pnpm run migrate:db
+RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN pnpm install
+
+WORKDIR /usr/src/project/packages/db
+RUN pnpm exec prisma generate
+RUN pnpm exec prisma migrate deploy
+
+WORKDIR /usr/src/project/apps/frontend
 RUN pnpm run build
 
-# Production Image
-FROM node:20
-
 WORKDIR /usr/src/project
-COPY --from=builder /usr/src/project ./
-
-ENV DATABASE_URL={$DATABASE_URL}
 
 EXPOSE 3002
+
 CMD ["pnpm", "run", "start:frontend"]

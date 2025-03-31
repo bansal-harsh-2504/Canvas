@@ -1,27 +1,48 @@
+version: "3.8"
+
 services:
   backend:
     build:
       context: .
       dockerfile: .docker/Dockerfile.backend
-      args:
-        DB_URL: postgres://postgres:ilovemyindia@localhost:5432
     ports:
       - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
 
   frontend:
     build:
       context: .
       dockerfile: .docker/Dockerfile.frontend
-      args:
-        DB_URL: postgres://postgres:ilovemyindia@localhost:5432
     ports:
       - "3002:3002"
+    depends_on:
+      - backend  # Waits for backend to be ready
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
 
-  ws:
+  ws-server:
     build:
       context: .
       dockerfile: .docker/Dockerfile.ws
-      args:
-        DB_URL: postgres://postgres:ilovemyindia@localhost:5432
     ports:
       - "8080:8080"
+    depends_on:
+      - backend  # Waits for backend to be ready
+
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ilovemyindia
+      POSTGRES_DB: mydatabase
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+volumes:
+  db-data:
